@@ -69,7 +69,7 @@ elif menu == "➕ Novo Processo":
             st.cache_data.clear()
 
 # --- ALTERAÇÃO / EXCLUSÃO ---
-    elif menu == "📝 Gerenciar Registros":
+elif menu == "📝 Gerenciar Registros":
     st.header("Editar ou Excluir Processos")
     
     # 1. Definir o nome correto da coluna (usando o que padronizamos anteriormente)
