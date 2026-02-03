@@ -72,24 +72,34 @@ elif menu == "➕ Novo Processo":
 elif menu == "📝 Gerenciar Registros":
     st.header("Editar ou Excluir Processos")
     
-    # Seleção do registro pelo Requerente
-    selecao = st.selectbox("Selecione o Requerente para editar", df['Requerente'].unique())
-    item_data = df[df['Requerente'] == selecao].iloc[0]
+    # 1. Garantir que estamos usando o nome da coluna padronizado
+    col_nome = 'REQUERENTE' if 'REQUERENTE' in df.columns else 'Requerente'
     
-    with st.expander(f"Editar dados de: {selecao}"):
-        novo_status = st.selectbox("Alterar Status", ["SUBMETIDO", "EM ANÁLISE", "DILIGÊNCIA", "DECISÃO", "CONCLUÍDO"], 
-                                   index=["SUBMETIDO", "EM ANÁLISE", "DILIGÊNCIA", "DECISÃO", "CONCLUÍDO"].index(item_data['Status']))
-        novo_saldo = st.number_input("Atualizar Saldo Devedor", value=float(item_data['Saldo_Devedor']) if pd.notnull(item_data['Saldo_Devedor']) else 0.0)
+    if df.empty:
+        st.warning("A planilha está vazia.")
+    else:
+        # 2. Seleção do requerente
+        lista_requerentes = df[col_nome].unique()
+        selecao = st.selectbox("Selecione o Requerente para editar", lista_requerentes)
         
-        col_btn1, col_btn2 = st.columns(2)
-        if col_btn1.button("Confirmar Alterações"):
-            df.loc[df['Requerente'] == selecao, 'Status'] = novo_status
-            df.loc[df['Requerente'] == selecao, 'Saldo_Devedor'] = novo_saldo
-            conn.update(worksheet="NACIONALIDADE", data=df)
-            st.success("Dados atualizados!")
+        # 3. Filtragem defensiva (Evita o IndexError)
+        dados_filtrados = df[df[col_nome] == selecao]
+        
+        if not dados_filtrados.empty:
+            item_data = dados_filtrados.iloc[0] # Agora é seguro usar iloc[0]
             
-        if col_btn2.button("❌ EXCLUIR PROCESSO", type="primary"):
-            df = df[df['Requerente'] != selecao]
-            conn.update(worksheet="NACIONALIDADE", data=df)
-            st.warning("Registro removido.")
-            st.rerun()
+            with st.expander(f"Editar dados de: {selecao}"):
+                # Use os nomes das colunas em MAIÚSCULO conforme a padronização
+                status_atual = item_data.get('STATUS', 'SUBMETIDO')
+                
+                novo_status = st.selectbox("Alterar Status", 
+                                         ["SUBMETIDO", "EM ANÁLISE", "DILIGÊNCIA", "DECISÃO", "CONCLUÍDO"],
+                                         index=0) # Você pode ajustar o index dinamicamente depois
+                
+                if st.button("Confirmar Alterações"):
+                    df.loc[df[col_nome] == selecao, 'STATUS'] = novo_status
+                    conn.update(worksheet="NACIONALIDADE", data=df)
+                    st.success("Dados atualizados!")
+                    st.cache_data.clear()
+        else:
+            st.error("Erro: O registro selecionado não foi encontrado nos dados carregados.")
