@@ -64,8 +64,8 @@ if menu == "📊 Dashboard":
         pago_val = pd.to_numeric(df.get('VALOR_PAGO', 0), errors='coerce').sum()
         saldo_val = pd.to_numeric(df.get('SALDO_DEVEDOR', 0), errors='coerce').sum()
         
-        col3.metric("Total Recebido", f"R$ {pago_val:,.2f}")
-        col4.metric("Saldo em Aberto", f"R$ {saldo_val:,.2f}")
+        col3.metric("Total Recebido", f"€ {pago_val:,.2f}")
+        col4.metric("Saldo em Aberto", f"€ {saldo_val:,.2f}")
 
         st.divider()
         
